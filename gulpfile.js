@@ -6,6 +6,7 @@ var plumber = require('gulp-plumber');
 var notify = require('gulp-notify');
 var autoprefixer = require('gulp-autoprefixer');
 var scss = require('gulp-sass');
+var sourcemaps = require('gulp-sourcemaps');
 
 
 
@@ -32,11 +33,13 @@ gulp.task('less', function() {
     			}
     		})
     	}))
+    	.pipe(sourcemaps.init())
     	.pipe(less())
     	.pipe(autoprefixer({
     		browsers: ['last 5 versions'],
     		cascade: false
     	}))
+    	.pipe(sourcemaps.write())
     	.pipe(gulp.dest('./src/css'))
     	.pipe(browserSync.stream());
 });
@@ -51,11 +54,13 @@ gulp.task('scss', function() {
     			}
     		})
     	}))
+    	.pipe(sourcemaps.init())
     	.pipe(scss())
     	.pipe(autoprefixer({
     		browsers: ['last 5 versions'],
     		cascade: false
     	}))
+    	.pipe(sourcemaps.write())
     	.pipe(gulp.dest('./src/css'))
     	.pipe(browserSync.stream());
 });
