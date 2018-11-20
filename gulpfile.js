@@ -4,6 +4,9 @@ var browserSync = require('browser-sync').create();
 var less = require('gulp-less');
 var plumber = require('gulp-plumber');
 var notify = require('gulp-notify');
+var autoprefixer = require('gulp-autoprefixer');
+
+
 
 /* Задачи для Gulp */
 gulp.task('server', function() {
@@ -28,6 +31,10 @@ gulp.task('less', function() {
     		})
     	}))
     	.pipe(less())
+    	.pipe(autoprefixer({
+    		browsers: ['last 5 versions'],
+    		cascade: false
+    	}))
     	.pipe(gulp.dest('./src/css'))
     	.pipe(browserSync.stream());
 });
