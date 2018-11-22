@@ -8,79 +8,110 @@ var autoprefixer = require('gulp-autoprefixer');
 var scss = require('gulp-sass');
 var sourcemaps = require('gulp-sourcemaps');
 var pug = require('gulp-pug');
+var del = require('del');
+var runSequence = require('run-sequence');
 
 
 
 /* Задачи для Gulp */
-gulp.task('server', ['scss'], function() {
-		browserSync.init({
-			server: { baseDir: "./build/" }
-		});
+gulp.task('clean:build', function() {
+	return del('./build');
+});
 
-		gulp.watch('src/**/*.html').on('change', browserSync.reload);
-		// gulp.watch('src/less/**/*.less', ['less']);
-		gulp.watch('src/scss/**/*.scss', ['scss']);
-		gulp.watch('src/js/**/*.js').on('change', browserSync.reload);
+gulp.task('server', function() {
+	browserSync.init({
+		server: { baseDir: "./build/" }
+	});
+	gulp.watch('src/pug/**/*.*', ['pug']);
+	// gulp.watch('src/less/**/*.less', ['less']);
+	gulp.watch('src/scss/**/*.scss', ['scss']);
+	gulp.watch('src/js/**/*.js', ['copy:js']);
+	gulp.watch('src/libs/**/*.*', ['copy:libs']);
+	gulp.watch('src/img/**/*.*', ['copy:img']);
+});
 
+gulp.task('copy:js', function() {
+	return gulp.src('src/js/**/*.js')
+		.pipe(gulp.dest('./build/js'))
+		.pipe(browserSync.stream());
+});
+
+gulp.task('copy:libs', function() {
+	return gulp.src('src/libs/**/*.*')
+		.pipe(gulp.dest('./build/libs'))
+		.pipe(browserSync.stream());
+});
+
+gulp.task('copy:img', function() {
+	return gulp.src('src/img/**/*.*')
+		.pipe(gulp.dest('./build/img'))
+		.pipe(browserSync.stream());
 });
 
 gulp.task('less', function() {
-		return gulp.src('./src/less/main.less')
-			.pipe(plumber({
-				errorHandler: notify.onError(function(err){
-					return {
-						title: 'Styles',
-						message: err.message
-					}
-				})
-			}))
-			.pipe(sourcemaps.init())
-			.pipe(less())
-			.pipe(autoprefixer({
-				browsers: ['last 5 versions'],
-				cascade: false
-			}))
-			.pipe(sourcemaps.write())
-			.pipe(gulp.dest('./src/css'))
-			.pipe(browserSync.stream());
+	return gulp.src('./src/less/main.less')
+		.pipe(plumber({
+			errorHandler: notify.onError(function(err){
+				return {
+					title: 'Styles',
+					message: err.message
+				}
+			})
+		}))
+		.pipe(sourcemaps.init())
+		.pipe(less())
+		.pipe(autoprefixer({
+			browsers: ['last 10 versions'],
+			cascade: false
+		}))
+		.pipe(sourcemaps.write())
+		.pipe(gulp.dest('./build/css'))
+		.pipe(browserSync.stream());
 });
 
 gulp.task('scss', function() {
-		return gulp.src('./src/scss/main.scss')
-			.pipe(plumber({
-				errorHandler: notify.onError(function(err){
-					return {
-						title: 'Styles',
-						message: err.message
-					}
-				})
-			}))
-			.pipe(sourcemaps.init())
-			.pipe(scss())
-			.pipe(autoprefixer({
-				browsers: ['last 5 versions'],
-				cascade: false
-			}))
-			.pipe(sourcemaps.write())
-			.pipe(gulp.dest('./src/css'))
-			.pipe(browserSync.stream());
+	return gulp.src('./src/scss/main.scss')
+		.pipe(plumber({
+			errorHandler: notify.onError(function(err){
+				return {
+					title: 'Styles',
+					message: err.message
+				}
+			})
+		}))
+		.pipe(sourcemaps.init())
+		.pipe(scss())
+		.pipe(autoprefixer({
+			browsers: ['last 10 versions'],
+			cascade: false
+		}))
+		.pipe(sourcemaps.write())
+		.pipe(gulp.dest('./build/css'))
+		.pipe(browserSync.stream());
 });
 
 gulp.task('pug', function() {
-		return gulp.src('./src/pug/pages/**/*.pug')
-			.pipe(plumber({
-				errorHandler: notify.onError(function(err){
-					return {
-						title: 'Pug',
-						message: err.message
-					}
-				})
-			}))
-			.pipe(pug({
-				pretty: true
-			}))
-			.pipe(gulp.dest('./build'))
-			.pipe(browserSync.stream());
+	return gulp.src('./src/pug/pages/**/*.pug')
+		.pipe(plumber({
+			errorHandler: notify.onError(function(err){
+				return {
+					title: 'Pug',
+					message: err.message
+				}
+			})
+		}))
+		.pipe(pug({
+			pretty: true
+		}))
+		.pipe(gulp.dest('./build'))
+		.pipe(browserSync.stream());
 });
 
-gulp.task('default', ['server']);
+gulp.task('default', function(callback){
+	runSequence(
+		'clean:build',
+		['scss', 'pug', 'copy:js', 'copy:libs', 'copy:img'],
+		'server',
+		callback
+	)
+});
